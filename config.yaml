@@ -1,0 +1,29 @@
+domains:
+    https://vk.com/club175878230:
+        channel: sanya_odh
+        last_id: 600
+        last_story_id: 0
+        pinned_id: 0
+        use_long_poll: true
+settings:
+    admins_id:
+    - 436370592
+    footer: '``'
+    send_reposts: post_only
+    sign_posts: false
+    what_to_send:
+    - text
+    - link
+    - photo
+    - doc
+    - video
+    - music
+    - polls
+telegram:
+    api_hash: 6ffe2101f146d210ffa1c25cd0340e4e
+    api_id: 28738397
+    bot_token: 6975837894:AAGnzTFTsGvu8skQb6Ntn7FVUKF5MzGk7KU
+vk:
+    login: ''
+    password: ''
+    token: vk1.a.G-SZuq2k6Yb8igMoINcgKZ0HVp8XK8BAeX6Xoj8W0afOznxKmsqzMz2UqPgyNDtdspkO2Zi47BcX8RaNIPFI9C9wmurOKj-TyMl9yhvpVnzZNAtrLFtKGI5ViRqy4Y7iHrIU4zHEjOjb7dYvjHc4C-h5kNPRbEdZW65N3QY23E3tLb74p8vRH_26hvZ5mXdfjxtUaYRR14r-Kb6YLwKq5A
