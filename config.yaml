@@ -1,7 +1,7 @@
 domains:
     https://vk.com/club175878230:
         channel: sanya_odh
-        last_id: 600
+        last_id: 608
         last_story_id: 0
         pinned_id: 0
         use_long_poll: true
@@ -9,7 +9,7 @@ settings:
     admins_id:
     - 436370592
     footer: '``'
-    send_reposts: post_only
+    send_reposts: false
     sign_posts: false
     what_to_send:
     - text

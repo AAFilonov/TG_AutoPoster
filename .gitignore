@@ -114,3 +114,7 @@ config.ini
 *.pid
 TG_AutoPoster.session
 TG_AutoPoster.session-journal
+TG_AutoPoster/autoposter.session
+TG_AutoPoster/autoposter.session-journal
+autoposter.session
+config.yaml
