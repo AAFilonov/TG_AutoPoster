@@ -1,7 +1,7 @@
 domains:
     https://vk.com/club175878230:
         channel: sanya_odh
-        last_id: 608
+        last_id: 624
         last_story_id: 0
         pinned_id: 0
         use_long_poll: true
@@ -18,7 +18,6 @@ settings:
     - doc
     - video
     - music
-    - polls
 telegram:
     api_hash: 6ffe2101f146d210ffa1c25cd0340e4e
     api_id: 28738397
