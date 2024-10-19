@@ -60,21 +60,20 @@ class AutoPoster(Client):
         )
 
         if self.config["vk"].get("token"):
+            logger.warning("Используется ключ доступа пользователя. "
+                           "Загрузка аудио и видео может быть недоступна.")
             self.vk_session = VkApi(
                 token=self.config["vk"]["token"], api_version="5.131"
             )
         else:
-            logger.warning(
-                "Использование логина и пароля не рекомендуется. Используйте ключ доступа пользователя."
-            )
             self.vk_session = VkApi(
                 login=self.config["vk"]["login"],
                 password=self.config["vk"]["password"],
                 auth_handler=auth_handler,
                 captcha_handler=captcha_handler,
                 api_version="5.131",
-                app_id=2685278,
-                client_secret="lxhD8OD7dMsqtXIm5IUY",
+                app_id=6287487,
+                client_secret="QbYic1K3lEV5kTGiqlq2",
             )
             self.vk_session.auth()
 

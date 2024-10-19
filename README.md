@@ -43,12 +43,12 @@ pip3 install -U TG-AutoPoster
 | password (необязательно) |                    |                 Пароль                 |
 
 ### Запуск                                                                                                                                                                                                                                                                                                                                                            
-1. Для запуска используйте [TG_AutoPoster.sh](/TG_AutoPoster.sh) или команду `python3 -m TG_AutoPoster`     
-2. Активируйте бота командой `/start`
+1. Для запуска используйте консольную команду `python3 -m TG_AutoPoster`     
+2. Активируйте бота в чате командой `/start`
 
 Автопостинг **рекомендуется** настраивать через чат с ботом. Подробнее можно узнать, отправив боту команду `/help`
 
-Для доступных параметров командой строки используйте `bash TG_AutoPoster.sh --help` или `python3 -m TG_AutoPoster --help`
+Для доступных параметров командой строки используйте `python3 -m TG_AutoPoster --help`
 
 По умолчанию бот проверяет группы на наличие новых постов раз в час. Если необходимо изменить период проверки постов
 запустите бота с параметром командной строки `--sleep N`, где N — значение в секундах. Не рекомендуется устанавливать
@@ -92,6 +92,5 @@ pip3 install -U TG-AutoPoster
 2. Telegram: [@QwertyAdrian](https://t.me/QwertyAdrian)
 
 Для пожертвований на развитие проекта:
-1. [Qiwi](https://qiwi.com/n/QWERTYADRIAN)
-2. Bitcoin: `1H1UVnXgvcLo3RWmxuYmi7b16ADo6XBWw5`
-3. TON: `EQD42Z5d8d1gT1uSpKTAaLYHlQ95vdMXrlNlYMpSFpQawwuY`
+1. Bitcoin: `1H1UVnXgvcLo3RWmxuYmi7b16ADo6XBWw5`
+2. TON: `EQD42Z5d8d1gT1uSpKTAaLYHlQ95vdMXrlNlYMpSFpQawwuY`

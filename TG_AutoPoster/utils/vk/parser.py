@@ -2,7 +2,6 @@ import urllib.error
 from re import IGNORECASE, MULTILINE, sub
 
 import requests
-from bs4 import BeautifulSoup
 from loguru import logger
 from pyrogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                             InputMediaAudio, InputMediaDocument,
@@ -12,8 +11,7 @@ from vk_api.audio import VkAudio
 from wget import download, detect_filename
 
 from ..tools import build_menu, split
-from .tools import (Attachments, add_audio_tags, download_video, gif_to_video,
-                    m3u8_to_mp3)
+from .tools import Attachments, add_audio_tags, gif_to_video, m3u8_to_mp3
 
 MAX_FILENAME_LENGTH = 255
 DOMAIN_REGEX = r"https://(m\.)?vk\.com/"
@@ -51,6 +49,24 @@ class Post:
         self.what_to_parse = what_to_parse
         self.header = header
         self.footer = footer
+        self.video_token = None
+
+        r = self.session.http.post(
+            "https://login.vk.com/?act=web_token",
+            params=dict(
+                version=1,
+                app_id=7879029,
+                access_token=self.session.token["access_token"],
+            ),
+            headers=dict(
+                Origin="https://m.vk.com",
+                Referer="https://m.vk.com",
+            )
+        )
+        if r.ok:
+            r = r.json()
+            if r["type"] == "okay":
+                self.video_token = r["data"]["access_token"]
 
     def parse_post(self):
         logger.info("[VK] Парсинг поста.")
@@ -161,6 +177,13 @@ class Post:
     def parse_doc(self, attachment):
         logger.info("[VK] Извлечение документа {}", attachment["title"])
         logger.debug(attachment)
+        if not self.check_file_size(attachment["url"]):
+            logger.warning(
+                '[VK] Размер документа превышает допустимый. '
+                'Добавляем ссылку на документ в текст.'
+            )
+            self.text += '\n📃 <a href="{url}">{title}</a>'.format(**attachment)
+            return
         try:
             attachment["title"] = sub(
                 r"[/\\:*?\"><|]", "", attachment["title"]
@@ -190,50 +213,70 @@ class Post:
         logger.info("[VK] Извлечение видео")
         logger.debug(attachment)
 
-        video_link = "https://m.vk.com/video{owner_id}_{id}".format(
-            **attachment
-        )
+        lnk = "https://m.vk.com/video{owner_id}_{id}".format(**attachment)
+        vid_key = "{owner_id}_{id}".format(**attachment)
         if attachment.get("access_key"):
-            video_link += "?list={access_key}".format(**attachment)
+            lnk += "?list={access_key}"
+            vid_key += "_{access_key}"
 
-        soup = BeautifulSoup(
-            self.session.http.get(video_link).text, "html.parser"
-        )
+        video_text = (
+            '\n🎥 <a href="{}">{title}</a>'
+            '\n👁 {views} раз(а) ⏳ {duration} сек'
+        ).format(lnk, **attachment)
 
-        if (
-            not attachment.get("platform")
-            and len(soup.find_all("source")) >= 2
-        ):
-            video_file = soup.find_all("source")[1].get("src")
-            filesize = self.session.http.head(video_file).headers[
-                "Content-Length"
-            ]
-            if int(filesize) >= 2 * 10**9:
-                logger.info(
-                    "[VK] Видео весит более 2 ГБ. Добавляем ссылку на видео в текст."
-                )
-                self.text += '\n🎥 <a href="{0}">{1[title]}</a>\n👁 {1[views]} раз(а) ⏳ {1[duration]} сек'.format(
-                    video_link.replace("m.", ""), attachment
-                )
-                return None
-            else:
-                file = download_video(self.session.http, video_file)
-            self.attachments.media.append(InputMediaVideo(file))
-        else:
-            video = self.session.method(
-                method="video.get",
-                values={
-                    "owner_id": attachment["owner_id"],
-                    "videos": "{owner_id}_{id}".format(**attachment),
-                },
-            )["items"]
-            if video:
-                video_link = (
-                    video[0].get("files", {}).get("external", video_link)
-                )
-            self.text += '\n🎥 <a href="{0}">{1[title]}</a>\n👁 {1[views]} раз(а) ⏳ {1[duration]} сек'.format(
-                video_link.replace("m.", ""), attachment
+        if self.video_token is None:
+            logger.warning(
+                "[VK] Токен для получения видеозаписей не доступен. "
+                "Добавляем ссылку на видео в текст."
             )
+            self.text += video_text
+            return
+
+        video = self.session.http.get(
+            "https://api.vk.com/method/video.get",
+            params=dict(
+                v="5.223",
+                client_id=7879029,
+                access_token=self.video_token,
+                owner_id=attachment["owner_id"],
+                videos=vid_key,
+            )
+        )
+        if video.ok:
+            video = video.json()["response"]["items"][0]
+        else:
+            logger.warning(
+                "[VK] Не удалось получить прямую ссылку на видео. "
+                "Пропускаем его."
+            )
+            self.text += video_text
+            return
+
+        video_link = None
+        for k, v in video["files"].items():
+            if k in ("mp4_240", "mp4_360", "mp4_480", "mp4_720"):
+                video_link = v
+
+        if video_link is not None:
+            video_file = self.session.http.get(video_link, stream=True)
+            if video_file.ok:
+                if not self.check_file_size(video_link):
+                    logger.info(
+                        "[VK] Размер видео превышает допустимый. "
+                        "Добавляем ссылку на видео в текст."
+                    )
+                    self.text += video_text
+                else:
+                    video_name = detect_filename(
+                        headers=video_file.headers, default="video.mp4",
+                    )
+                    with open(video_name, "wb") as f:
+                        for chunk in video_file.iter_content(chunk_size=1024):
+                            if chunk:
+                                f.write(chunk)
+                    self.attachments.media.append(InputMediaVideo(video_name))
+        else:
+            self.text += video_text
 
     def parse_music(self, attachment):
         logger.info(
@@ -432,6 +475,10 @@ class Post:
         )
         self.repost.parse_post()
         self.repost.text = split(repost_source + " ".join(self.repost.text))
+
+    def check_file_size(self, url, max_size=2e9):
+        r = self.session.http.head(url)
+        return int(r.headers["Content-Length"]) < max_size
 
     def __bool__(self):
         return (

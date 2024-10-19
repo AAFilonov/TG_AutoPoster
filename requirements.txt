@@ -10,4 +10,7 @@ PyYAML==6.0.1
 m3u8==4.0.0
 pycryptodome==3.20.0
 moviepy==1.0.3
+gunicorn==20.1.0m3u8==3.6.0
+pycryptodome==3.19.0
+moviepy==1.0.3
 gunicorn==20.1.0
