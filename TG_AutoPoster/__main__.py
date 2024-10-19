@@ -71,7 +71,7 @@ def create_parser():
     return parser
 
 
-if __name__ == "__main__":
+def mainF():
     args = create_parser().parse_args()
 
     logs_dir = args.config.parent.absolute() / "logs"
@@ -136,3 +136,11 @@ if __name__ == "__main__":
     )
     scheduler.start()
     client.run()
+
+
+if __name__ == "__main__":
+    mainF()
+
+
+def main():
+    mainF()
